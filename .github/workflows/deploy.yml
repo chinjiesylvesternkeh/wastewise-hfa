@@ -1,5 +1,9 @@
 name: Deploy Wellness Platform
 
+permissions:
+  contents: read
+  security-events: write
+
 on:
   push:
     branches:
