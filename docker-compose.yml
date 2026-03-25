@@ -1,0 +1,148 @@
+version: '3.8'
+
+services:
+  # MongoDB Database
+  mongodb:
+    image: mongo:7.0
+    container_name: wellness-mongodb
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: wellness123
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+      - ./mongo-init:/docker-entrypoint-initdb.d
+    networks:
+      - wellness-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Main Gateway Application
+  gateway:
+    build:
+      context: ./main-app
+      dockerfile: Dockerfile
+    container_name: wellness-gateway
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - JWT_SECRET=your-super-secret-jwt-key-change-in-production
+      - MONGODB_URI=mongodb://admin:wellness123@mongodb:27017/wellness_gateway?authSource=admin
+    ports:
+      - "3000:3000"
+    depends_on:
+      - mongodb
+      - healthcare
+      - fitness
+      - culinary
+    networks:
+      - wellness-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Healthcare Application
+  healthcare:
+    build:
+      context: ./apps/healthcare
+      dockerfile: Dockerfile
+    container_name: wellness-healthcare
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - PORT=3002
+      - MONGODB_URI=mongodb://admin:wellness123@mongodb:27017/healthcare?authSource=admin
+    ports:
+      - "3002:3002"
+    depends_on:
+      - mongodb
+    networks:
+      - wellness-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3002/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Fitness Application
+  fitness:
+    build:
+      context: ./apps/fitness
+      dockerfile: Dockerfile
+    container_name: wellness-fitness
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - PORT=3003
+      - MONGODB_URI=mongodb://admin:wellness123@mongodb:27017/fitness?authSource=admin
+    ports:
+      - "3003:3003"
+    depends_on:
+      - mongodb
+    networks:
+      - wellness-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3003/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Culinary Application
+  culinary:
+    build:
+      context: ./apps/culinary
+      dockerfile: Dockerfile
+    container_name: wellness-culinary
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - PORT=3004
+      - MONGODB_URI=mongodb://admin:wellness123@mongodb:27017/culinary?authSource=admin
+    ports:
+      - "3004:3004"
+    depends_on:
+      - mongodb
+    networks:
+      - wellness-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3004/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Nginx Load Balancer (Optional)
+  nginx:
+    image: nginx:alpine
+    container_name: wellness-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/ssl:/etc/nginx/ssl
+    depends_on:
+      - gateway
+    networks:
+      - wellness-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  mongodb_data:
+    driver: local
+
+networks:
+  wellness-network:
+    driver: bridge

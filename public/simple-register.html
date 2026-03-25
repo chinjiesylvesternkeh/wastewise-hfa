@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Registration - Wellness Platform</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #333;
+        }
+
+        .container {
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #555;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 18px 30px;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(-1px);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .result.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .result.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .login-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .login-link a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        .login-link a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏥 Join Wellness Platform</h1>
+            <p>Start your wellness journey today</p>
+        </div>
+
+        <form id="register-form">
+            <div class="form-group">
+                <label for="name">Full Name *</label>
+                <input type="text" id="name" name="name" required placeholder="Enter your full name">
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email Address *</label>
+                <input type="email" id="email" name="email" required placeholder="Enter your email">
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password *</label>
+                <input type="password" id="password" name="password" required placeholder="Create a password (min 8 characters)" minlength="8">
+            </div>
+
+            <div class="form-group">
+                <label for="dateOfBirth">Date of Birth</label>
+                <input type="date" id="dateOfBirth" name="dateOfBirth">
+            </div>
+
+            <div class="form-group">
+                <label for="gender">Gender</label>
+                <select id="gender" name="gender">
+                    <option value="">Select your gender</option>
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                    <option value="other">Other</option>
+                    <option value="prefer_not_to_say">Prefer not to say</option>
+                </select>
+            </div>
+
+            <button type="submit" class="btn" id="register-btn">
+                Join Now
+            </button>
+        </form>
+
+        <div id="result" class="result"></div>
+
+        <div class="login-link">
+            <p>Already have an account? <a href="/simple-login.html">Sign in here</a></p>
+        </div>
+    </div>
+
+    <script>
+        console.log('Simple registration page loaded');
+
+        const form = document.getElementById('register-form');
+        const button = document.getElementById('register-btn');
+        const result = document.getElementById('result');
+
+        // Form submission handler
+        form.addEventListener('submit', async function(event) {
+            event.preventDefault();
+            console.log('Registration form submitted');
+
+            // Get form data
+            const formData = {
+                name: document.getElementById('name').value.trim(),
+                email: document.getElementById('email').value.trim(),
+                password: document.getElementById('password').value,
+                dateOfBirth: document.getElementById('dateOfBirth').value,
+                gender: document.getElementById('gender').value
+            };
+
+            console.log('Form data:', { ...formData, password: '[HIDDEN]' });
+
+            // Validate required fields
+            if (!formData.name || !formData.email || !formData.password) {
+                showResult('Please fill in all required fields', 'error');
+                return;
+            }
+
+            if (formData.password.length < 8) {
+                showResult('Password must be at least 8 characters long', 'error');
+                return;
+            }
+
+            // Show loading state
+            button.disabled = true;
+            button.textContent = 'Joining...';
+            showResult('Creating your account...', 'info');
+
+            try {
+                // Submit registration
+                const response = await fetch('/api/auth/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                console.log('Response status:', response.status);
+                const data = await response.json();
+                console.log('Response data:', data);
+
+                if (response.ok) {
+                    // Success!
+                    showResult(`🎉 Welcome, ${data.user.name}! Your account has been created successfully.`, 'success');
+                    
+                    // Store auth data
+                    localStorage.setItem('authToken', data.token);
+                    localStorage.setItem('currentUser', JSON.stringify(data.user));
+                    
+                    // Store registration data for easy login
+                    localStorage.setItem('rememberedEmail', formData.email);
+                    localStorage.setItem('rememberedName', formData.name);
+                    
+                    // Clear saved registration form data since registration was successful
+                    clearRegistrationData();
+                    
+                    // Redirect to login page after 2 seconds
+                    setTimeout(() => {
+                        window.location.href = '/simple-login.html';
+                    }, 2000);
+                    
+                } else {
+                    // Error from server
+                    showResult(`Registration failed: ${data.error}`, 'error');
+                }
+
+            } catch (error) {
+                console.error('Registration error:', error);
+                showResult(`Network error: ${error.message}`, 'error');
+            } finally {
+                // Reset button
+                button.disabled = false;
+                button.textContent = 'Join Now';
+            }
+        });
+
+        function showResult(message, type) {
+            result.textContent = message;
+            result.className = `result ${type}`;
+            result.style.display = 'block';
+        }
+
+        // Add some interactivity
+        document.getElementById('name').addEventListener('input', function() {
+            console.log('Name field updated');
+        });
+
+        document.getElementById('email').addEventListener('input', function() {
+            console.log('Email field updated');
+        });
+
+        console.log('Event listeners attached successfully');
+        
+        // Auto-save form data as user types
+        function setupAutoSave() {
+            const fields = ['name', 'email', 'dateOfBirth', 'gender'];
+            
+            fields.forEach(fieldId => {
+                const field = document.getElementById(fieldId);
+                if (field) {
+                    // Load saved data
+                    const savedValue = localStorage.getItem(`registration_${fieldId}`);
+                    if (savedValue && !field.value) {
+                        field.value = savedValue;
+                        console.log(`Restored ${fieldId}:`, savedValue);
+                    }
+                    
+                    // Save data as user types
+                    field.addEventListener('input', function() {
+                        localStorage.setItem(`registration_${fieldId}`, field.value);
+                        console.log(`Saved ${fieldId}:`, field.value);
+                    });
+                }
+            });
+        }
+        
+        // Clear saved registration data after successful registration
+        function clearRegistrationData() {
+            const fields = ['name', 'email', 'dateOfBirth', 'gender'];
+            fields.forEach(fieldId => {
+                localStorage.removeItem(`registration_${fieldId}`);
+            });
+            console.log('Cleared saved registration data');
+        }
+        
+        // Setup auto-save
+        setupAutoSave();
+    </script>
+</body>
+</html>

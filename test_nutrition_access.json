@@ -1,0 +1,12 @@
+{
+  "foodItem": "Apple",
+  "quantity": 1,
+  "unit": "pieces",
+  "mealType": "snack",
+  "nutritionFacts": {
+    "calories": 95,
+    "protein": 0.5,
+    "carbs": 25,
+    "fat": 0.3
+  }
+}
